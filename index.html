@@ -40,7 +40,7 @@
         //有幾個項目就呼叫幾個 addChild
         //addChild 要比 renderModal 先呼叫
         so.addChild('繪製出 5 個畫面', 1, true);
-        so.addChild('回答問題', 1, false);
+        so.addChild('回答問題', 1, true);
         so.addChild('可按鍵選擇上 / 下一隻角色', 1, true);
         so.addChild('讀取作業 2 儲存的座標點在眼睛上繪製出分割線', 1, false);
         so.addChild('可選擇當下控制哪個虹膜', 1, false);
@@ -206,6 +206,11 @@
           function (object) {
             mesh = object;
             mesh.position.y = -10;
+
+            // try to rotate iris
+            console.log(mesh.skeleton.bones);
+            // mesh.skeleton.bones[86].rotation.x = 10 * (Math.PI / 180);
+            // mesh.skeleton.bones[88].rotation.x = 10 * (Math.PI / 180);
 
             scene.add(mesh);
           },
