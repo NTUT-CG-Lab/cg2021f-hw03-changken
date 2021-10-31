@@ -41,7 +41,7 @@
         //addChild 要比 renderModal 先呼叫
         so.addChild('繪製出 5 個畫面', 1, true);
         so.addChild('回答問題', 1, false);
-        so.addChild('可按鍵選擇上 / 下一隻角色', 1, false);
+        so.addChild('可按鍵選擇上 / 下一隻角色', 1, true);
         so.addChild('讀取作業 2 儲存的座標點在眼睛上繪製出分割線', 1, false);
         so.addChild('可選擇當下控制哪個虹膜', 1, false);
         so.addChild('按滑鼠左鍵控制虹膜移動，右鍵停止', 2, false);
@@ -91,6 +91,9 @@
       let aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
       let frustumSize = 30;
       let camera, camera2, camera3, camera4, camera5;
+      let loader;
+      let modelFile;
+      let modelIndex = 0;
 
       Ammo().then(function (AmmoLib) {
         Ammo = AmmoLib;
@@ -167,22 +170,39 @@
         renderer.autoClear = false;
         effect = new OutlineEffect(renderer);
 
-        // model
-        function onProgress(xhr) {
-          if (xhr.lengthComputable) {
-            const percentComplete = (xhr.loaded / xhr.total) * 100;
-            console.log(Math.round(percentComplete, 2) + '% downloaded');
-          }
-        }
-
-        const modelFile = 'models/mmd/kizunaai/kizunaai.pmx';
+        modelFile = [
+          'models/mmd/kizunaai/kizunaai.pmx',
+          'models/mmd/KokoroAmamiya/KokoroAmamiya.pmx',
+          'models/mmd/AliceMononobe/AliceMononobe.pmx',
+        ];
 
         helper = new MMDAnimationHelper();
 
-        const loader = new MMDLoader();
+        loader = new MMDLoader();
 
+        loadMMD(modelIndex);
+
+        //
+
+        window.addEventListener('resize', onWindowResize);
+        window.addEventListener('keypress', onKeyPress);
+
+        //鏡頭控制
+        controlCameras();
+      }
+
+      // model
+      function onProgress(xhr) {
+        if (xhr.lengthComputable) {
+          const percentComplete = (xhr.loaded / xhr.total) * 100;
+          console.log(Math.round(percentComplete, 2) + '% downloaded');
+        }
+      }
+
+      function loadMMD(index) {
+        scene.remove(mesh);
         loader.load(
-          modelFile,
+          modelFile[index % modelFile.length],
           function (object) {
             mesh = object;
             mesh.position.y = -10;
@@ -192,12 +212,6 @@
           onProgress,
           null
         );
-
-        //
-
-        window.addEventListener('resize', onWindowResize);
-        //鏡頭控制
-        controlCameras();
       }
 
       function controlCameras() {
@@ -240,6 +254,19 @@
         cameracontrols.enableRotate = false;
         // cameracontrols.enableZoom = true;
         return cameracontrols;
+      }
+
+      function onKeyPress(e) {
+        if (e.key === 'a' || e.key === 'A') {
+          modelIndex--;
+          if (modelIndex < 0) {
+            modelIndex = modelFile.length - 1;
+          }
+          loadMMD(modelIndex);
+        } else if (e.key === 'd' || e.key === 'D') {
+          modelIndex++;
+          loadMMD(modelIndex);
+        }
       }
 
       function onWindowResize() {
