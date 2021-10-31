@@ -28,7 +28,7 @@
     <script>
       // 建構子 ScoreOutputer 接受一個字串，該字串為 csv 的檔案名稱
       // 以下面範例，檔名就為 "109598105(總分: 6).csv"
-      var so = new ScoreOutputer('109598105');
+      var so = new ScoreOutputer('110598028');
       so.installCSS(function () {
         // 安裝 bootstrap 的 css，如果在 html 上方引用 bootstrap 5.1.1 的話就不用使用 installCSS ，注意一定要 bootstrap css 5.1.1 版
         // installCSS 接收一個 callback 當作參數，作為成功安裝 bootstrap css 的回呼函式
@@ -91,9 +91,12 @@
       let aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
       let frustumSize = 30;
       let camera, camera2, camera3, camera4, camera5;
+
       let loader;
       let modelFile;
+      let modelLocationFile;
       let modelIndex = 0;
+      let cameraControlsList = [];
 
       Ammo().then(function (AmmoLib) {
         Ammo = AmmoLib;
@@ -175,6 +178,11 @@
           'models/mmd/KokoroAmamiya/KokoroAmamiya.pmx',
           'models/mmd/AliceMononobe/AliceMononobe.pmx',
         ];
+        modelLocationFile = [
+          'location/kizunaai.pmx.json',
+          'location/KokoroAmamiya.pmx.json',
+          'location/AliceMononobe.pmx.json',
+        ];
 
         helper = new MMDAnimationHelper();
 
@@ -188,7 +196,12 @@
         window.addEventListener('keypress', onKeyPress);
 
         //鏡頭控制
-        controlCameras();
+        initControlCamera();
+
+        setTimeout(() => {
+          //rotate iris
+          rotateEye(0, 0, 10);
+        }, 2000);
       }
 
       // model
@@ -209,8 +222,6 @@
 
             // try to rotate iris
             console.log(mesh.skeleton.bones);
-            // mesh.skeleton.bones[86].rotation.x = 10 * (Math.PI / 180);
-            // mesh.skeleton.bones[88].rotation.x = 10 * (Math.PI / 180);
 
             scene.add(mesh);
           },
@@ -219,37 +230,34 @@
         );
       }
 
-      function controlCameras() {
-        let controls = controlCamera(camera);
-        let controls2 = controlCamera(camera2);
-        let controls3 = controlCamera(camera3);
-        let controls4 = controlCamera(camera4);
-        let controls5 = controlCamera(camera5);
+      function initControlCamera() {
+        cameraControlsList.push({
+          camera: camera,
+          controls: controlCamera(camera),
+        });
+        cameraControlsList.push({
+          camera: camera2,
+          controls: controlCamera(camera2),
+        });
+        cameraControlsList.push({
+          camera: camera3,
+          controls: controlCamera(camera3),
+        });
+        cameraControlsList.push({
+          camera: camera4,
+          controls: controlCamera(camera4),
+        });
+        cameraControlsList.push({
+          camera: camera5,
+          controls: controlCamera(camera5),
+        });
 
-        zoomIn(camera, controls, true);
-        zoomIn(camera2, controls2);
-        zoomIn(camera3, controls3);
-        zoomIn(camera4, controls4);
-        zoomIn(camera5, controls5);
-      }
-
-      function zoomIn(cameraObject, cameracontrols, isLeft = true) {
-        if (cameraObject === camera) {
-          cameracontrols.dIn(0.015);
-          if (isLeft) {
-            cameracontrols.target = new THREE.Vector3(0.5, 8.2, 0);
-            cameraObject.position.set(0.5, 8.2, 30);
-          } else {
-            cameracontrols.target = new THREE.Vector3(-0.5, 8.2, 0);
-            cameraObject.position.set(-0.5, 8.2, 30);
-          }
-        } else {
-          cameracontrols.dIn(0.11);
-          cameracontrols.target = new THREE.Vector3(0, 8, 0);
-          cameraObject.position.set(0, 8, 30);
-        }
-
-        cameracontrols.update();
+        zoomIn(0, -0.5, 8.2, 0.015);
+        // zoomIn(0, 0.5, 8.2, 0.015);
+        zoomIn(1, 0, 8, 0.11);
+        zoomIn(2, 0, 8, 0.11);
+        zoomIn(3, 0, 8, 0.11);
+        zoomIn(4, 0, 8, 0.11);
       }
 
       function controlCamera(camera) {
@@ -259,6 +267,38 @@
         cameracontrols.enableRotate = false;
         // cameracontrols.enableZoom = true;
         return cameracontrols;
+      }
+
+      function zoomIn(index, x, y, scale) {
+        const cameraControlsItem =
+          cameraControlsList[index % cameraControlsList.length];
+        cameraControlsItem['controls'].dIn(scale);
+        cameraControlsItem['controls'].target = new THREE.Vector3(x, y, 0);
+        cameraControlsItem['camera'].position.set(x, y, 30);
+        cameraControlsItem['controls'].update();
+      }
+
+      /**
+       * eye => 0 左眼, 1 右眼
+       * axis => 0 上下, 1 左右
+       * angle => 角度 會轉換成弧度
+       * */
+      function rotateEye(eye, axis, angle) {
+        //左眼
+        if (eye === 0) {
+          if (axis === 0) {
+            mesh.skeleton.bones[86].rotation.x = angle * (Math.PI / 180);
+          } else if (axis === 1) {
+            mesh.skeleton.bones[86].rotation.y = angle * (Math.PI / 180);
+          }
+          //右眼
+        } else if (eye === 1) {
+          if (axis === 0) {
+            mesh.skeleton.bones[88].rotation.x = angle * (Math.PI / 180);
+          } else if (axis === 1) {
+            mesh.skeleton.bones[88].rotation.y = angle * (Math.PI / 180);
+          }
+        }
       }
 
       function onKeyPress(e) {
