@@ -84,8 +84,13 @@
       import { MMDLoader } from './jsm/loaders/MMDLoader.js';
       import { MMDAnimationHelper } from './jsm/animation/MMDAnimationHelper.js';
 
-      let scene, renderer, effect;
-      let mesh, helper;
+      let scene,
+        scenes = [],
+        renderer,
+        effect;
+      let mesh,
+        meshes = [],
+        helper;
       let SCREEN_WIDTH = window.innerWidth;
       let SCREEN_HEIGHT = window.innerHeight;
       let aspect = SCREEN_WIDTH / SCREEN_HEIGHT;
@@ -97,6 +102,7 @@
       let modelLocationFile;
       let modelIndex = 0;
       let cameraControlsList = [];
+      let isInitedList = [false, false, false, false];
 
       Ammo().then(function (AmmoLib) {
         Ammo = AmmoLib;
@@ -164,6 +170,11 @@
         directionalLight.position.set(-1, 1, 1).normalize();
         scene.add(directionalLight);
 
+        //clone scene four times
+        for (let i = 0; i < 4; i++) {
+          scenes.push(scene.clone());
+        }
+
         //
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -188,7 +199,10 @@
 
         loader = new MMDLoader();
 
-        loadMMD(modelIndex);
+        loadMMD(modelIndex, 0);
+        loadMMD(modelIndex, 1);
+        loadMMD(modelIndex, 2);
+        loadMMD(modelIndex, 3);
 
         //
 
@@ -200,8 +214,8 @@
 
         setTimeout(() => {
           //rotate iris
-          rotateEye(0, 0, 10);
-        }, 2000);
+          rotateEye(0, 0, 0, 10);
+        }, 3000);
       }
 
       // model
@@ -212,8 +226,11 @@
         }
       }
 
-      function loadMMD(index) {
-        scene.remove(mesh);
+      function loadMMD(index, meshId) {
+        if (isInitedList[meshId]) {
+          // scene.remove(mesh);
+          scenes[meshId].remove(meshes[meshId]);
+        }
         loader.load(
           modelFile[index % modelFile.length],
           function (object) {
@@ -223,7 +240,13 @@
             // try to rotate iris
             console.log(mesh.skeleton.bones);
 
-            scene.add(mesh);
+            // add mesh
+            meshes.push(mesh);
+            scenes[meshId].add(meshes[meshId]);
+
+            isInitedList[meshId] = true;
+
+            // scene.add(mesh);
           },
           onProgress,
           null
@@ -279,24 +302,29 @@
       }
 
       /**
+       * meshId => mesh id
        * eye => 0 左眼, 1 右眼
        * axis => 0 上下, 1 左右
        * angle => 角度 會轉換成弧度
        * */
-      function rotateEye(eye, axis, angle) {
+      function rotateEye(meshId, eye, axis, angle) {
         //左眼
         if (eye === 0) {
           if (axis === 0) {
-            mesh.skeleton.bones[86].rotation.x = angle * (Math.PI / 180);
+            meshes[meshId].skeleton.bones[86].rotation.x =
+              angle * (Math.PI / 180);
           } else if (axis === 1) {
-            mesh.skeleton.bones[86].rotation.y = angle * (Math.PI / 180);
+            meshes[meshId].skeleton.bones[86].rotation.y =
+              angle * (Math.PI / 180);
           }
           //右眼
         } else if (eye === 1) {
           if (axis === 0) {
-            mesh.skeleton.bones[88].rotation.x = angle * (Math.PI / 180);
+            meshes[meshId].skeleton.bones[88].rotation.x =
+              angle * (Math.PI / 180);
           } else if (axis === 1) {
-            mesh.skeleton.bones[88].rotation.y = angle * (Math.PI / 180);
+            meshes[meshId].skeleton.bones[88].rotation.y =
+              angle * (Math.PI / 180);
           }
         }
       }
@@ -363,7 +391,7 @@
         effect.clear();
 
         effect.setViewport(0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);
-        effect.render(scene, camera);
+        effect.render(scenes[0], camera);
 
         effect.setViewport(
           SCREEN_WIDTH / 2,
@@ -371,7 +399,7 @@
           SCREEN_WIDTH / 4,
           SCREEN_HEIGHT / 2
         );
-        effect.render(scene, camera2);
+        effect.render(scenes[0], camera2);
 
         effect.setViewport(
           SCREEN_WIDTH / 2 + SCREEN_WIDTH / 4,
@@ -379,7 +407,7 @@
           SCREEN_WIDTH / 4,
           SCREEN_HEIGHT / 2
         );
-        effect.render(scene, camera3);
+        effect.render(scenes[1], camera3);
 
         effect.setViewport(
           SCREEN_WIDTH / 2,
@@ -387,7 +415,7 @@
           SCREEN_WIDTH / 4,
           SCREEN_HEIGHT / 2
         );
-        effect.render(scene, camera4);
+        effect.render(scenes[2], camera4);
 
         effect.setViewport(
           SCREEN_WIDTH / 2 + SCREEN_WIDTH / 4,
@@ -395,7 +423,7 @@
           SCREEN_WIDTH / 4,
           SCREEN_HEIGHT / 2
         );
-        effect.render(scene, camera5);
+        effect.render(scenes[3], camera5);
       }
     </script>
   </body>
