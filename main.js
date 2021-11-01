@@ -26,6 +26,15 @@ let selectedIrisId = 0;
 let cameraControlsList = [];
 let isInitedList = [false, false, false, false];
 
+//紀錄畫線
+let lines = [];
+for (let i = 0; i < 32; i++) {
+  lines.push(null);
+}
+
+//紀錄線段位置
+let location;
+
 Ammo().then(function (AmmoLib) {
   Ammo = AmmoLib;
 
@@ -134,6 +143,38 @@ function init() {
   setTimeout(() => {
     //rotate iris
     rotateEye(0, 0, 0, 10);
+    drawLine(
+      0,
+      0xff0000,
+      0,
+      false,
+      location.line_locationx_5,
+      location.line_locationy_5
+    );
+    drawLine(
+      0,
+      0x0000ff,
+      1,
+      true,
+      location.line_locationx_6,
+      location.line_locationy_6
+    );
+    drawLine(
+      0,
+      0xff0000,
+      2,
+      false,
+      location.line_locationx_7,
+      location.line_locationy_7
+    );
+    drawLine(
+      0,
+      0x0000ff,
+      3,
+      true,
+      location.line_locationx_8,
+      location.line_locationy_8
+    );
   }, 3000);
 }
 
@@ -172,6 +213,8 @@ function loadMMD(index, meshId) {
 
       isInitedList[meshId] = true;
 
+      loadModelLocation();
+
       // scene.add(mesh);
     },
     onProgress,
@@ -201,7 +244,7 @@ function initControlCamera() {
     controls: controlCamera(camera5),
   });
 
-  zoomIn(0, -0.5, 8.2, 0.015);
+  zoomIn(0, -0.5, 8.2, 0.02);
   // zoomIn(0, 0.5, 8.2, 0.015);
   zoomIn(1, 0, 8, 0.11);
   zoomIn(2, 0, 8, 0.11);
@@ -283,6 +326,45 @@ function onKeyPress(e) {
     }
     renderSelectedIris(selectedIrisId);
   }
+}
+
+//載入已標記好的線
+async function loadModelLocation() {
+  const res = await fetch(
+    modelLocationFile[modelIndex % modelLocationFile.length]
+  );
+  const json = await res.json();
+  console.log(json);
+
+  location = json;
+}
+
+//畫線
+function drawLine(sceneId, color, i, vertical = false, x, y) {
+  let geometry;
+
+  //是直的 or 橫的線
+  if (vertical) {
+    geometry = new THREE.BoxGeometry(0.005, 1, 0);
+  } else {
+    geometry = new THREE.BoxGeometry(1, 0.005, 0);
+  }
+
+  //console.log("color: " + color);
+
+  let material = new THREE.MeshBasicMaterial({ color: color });
+  const line = new THREE.Mesh(geometry, material);
+
+  line.position.x = x;
+  line.position.y = y;
+  line.position.z = 10;
+
+  if (lines[i - 1] !== null) {
+    scenes[sceneId].remove(lines[i - 1]);
+  }
+
+  lines[i - 1] = line;
+  scenes[sceneId].add(lines[i - 1]);
 }
 
 function onWindowResize() {
