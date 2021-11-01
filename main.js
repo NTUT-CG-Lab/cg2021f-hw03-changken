@@ -36,6 +36,10 @@ for (let i = 0; i < 14; i++) {
 let location;
 let lastSceneId;
 
+//紀錄滑鼠位置
+let mouseX = null,
+  mouseY = null;
+
 Ammo().then(function (AmmoLib) {
   Ammo = AmmoLib;
 
@@ -137,6 +141,7 @@ function init() {
 
   window.addEventListener('resize', onWindowResize);
   window.addEventListener('keypress', onKeyPress);
+  window.addEventListener('mousedown', onMouseDown);
 
   //鏡頭控制
   initControlCamera();
@@ -447,6 +452,48 @@ function drawLines() {
   drawLine(sceneId, verticalColor, 14, true, points.x4, points.y4);
 
   lastSceneId = sceneId;
+}
+
+function onMouseDown(e) {
+  if (e.buttons === 1) {
+    // console.log('left');
+    window.addEventListener('mousemove', onMouseMove);
+  } else if (e.buttons === 2) {
+    // console.log('right');
+    window.removeEventListener('mousemove', onMouseMove);
+    mouseX = null;
+    mouseY = null;
+  }
+}
+
+function onMouseMove(e) {
+  const mouseWorld = new THREE.Vector3();
+  const { left, top, width, height } = e.target.getBoundingClientRect();
+  mouseWorld.set(
+    ((e.clientX - left + 1) / width) * 2 - 1,
+    -((e.clientY - top + 1) / height) * 2 + 1,
+    (camera.near + camera.far) / (camera.near - camera.far)
+  );
+  mouseWorld.unproject(camera);
+  // console.log('project');
+  // console.log(mouseWorld.x + ' ' + mouseWorld.y);
+
+  // console.log(e.clientX, e.clientY);
+  if (mouseX === null && mouseY === null) {
+    mouseX = mouseWorld.x;
+    mouseY = mouseWorld.y;
+  }
+
+  let deltaX = ((mouseWorld.x - mouseX) / mouseX) * 100;
+  let deltaY = ((mouseWorld.y - mouseY) / mouseY) * 100;
+
+  let selectedSceneId = parseInt(selectedIrisId / 2);
+  let eye = selectedIrisId % 2;
+
+  rotateEye(selectedSceneId, eye, 0, deltaY);
+  rotateEye(selectedSceneId, eye, 1, deltaX);
+
+  console.log(deltaX, deltaY);
 }
 
 function onWindowResize() {
