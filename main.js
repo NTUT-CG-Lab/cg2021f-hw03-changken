@@ -28,12 +28,13 @@ let isInitedList = [false, false, false, false];
 
 //紀錄畫線
 let lines = [];
-for (let i = 0; i < 32; i++) {
+for (let i = 0; i < 14; i++) {
   lines.push(null);
 }
 
 //紀錄線段位置
 let location;
+let lastSceneId;
 
 Ammo().then(function (AmmoLib) {
   Ammo = AmmoLib;
@@ -143,38 +144,6 @@ function init() {
   setTimeout(() => {
     //rotate iris
     rotateEye(0, 0, 0, 10);
-    drawLine(
-      0,
-      0xff0000,
-      0,
-      false,
-      location.line_locationx_5,
-      location.line_locationy_5
-    );
-    drawLine(
-      0,
-      0x0000ff,
-      1,
-      true,
-      location.line_locationx_6,
-      location.line_locationy_6
-    );
-    drawLine(
-      0,
-      0xff0000,
-      2,
-      false,
-      location.line_locationx_7,
-      location.line_locationy_7
-    );
-    drawLine(
-      0,
-      0x0000ff,
-      3,
-      true,
-      location.line_locationx_8,
-      location.line_locationy_8
-    );
   }, 3000);
 }
 
@@ -200,7 +169,7 @@ function loadMMD(index, meshId) {
   }
   loader.load(
     modelFile[index % modelFile.length],
-    function (object) {
+    async function (object) {
       mesh = object;
       mesh.position.y = -10;
 
@@ -213,7 +182,8 @@ function loadMMD(index, meshId) {
 
       isInitedList[meshId] = true;
 
-      loadModelLocation();
+      await loadModelLocation();
+      drawLines();
 
       // scene.add(mesh);
     },
@@ -319,12 +289,14 @@ function onKeyPress(e) {
       selectedIrisId = 7;
     }
     renderSelectedIris(selectedIrisId);
+    drawLines();
   } else if (e.key === '2') {
     selectedIrisId++;
     if (selectedIrisId > 7) {
       selectedIrisId = 0;
     }
     renderSelectedIris(selectedIrisId);
+    drawLines();
   }
 }
 
@@ -360,11 +332,121 @@ function drawLine(sceneId, color, i, vertical = false, x, y) {
   line.position.z = 10;
 
   if (lines[i - 1] !== null) {
-    scenes[sceneId].remove(lines[i - 1]);
+    scenes[lastSceneId].remove(lines[i - 1]);
   }
 
   lines[i - 1] = line;
   scenes[sceneId].add(lines[i - 1]);
+}
+
+function drawLines() {
+  let eye = selectedIrisId % 2;
+
+  const verticalColor = eye === 0 ? 0x0000ff : 0x00aeae;
+  const horizontalColor = eye === 0 ? 0xff0000 : 0x5b00ae;
+
+  let points = {
+    x1: eye === 0 ? -location.line_locationx_1 : location.line_locationx_1,
+    y1: location.line_locationy_1,
+    x2: eye === 0 ? -location.line_locationx_2 : location.line_locationx_2,
+    y2: location.line_locationy_2,
+    x3: eye === 0 ? -location.line_locationx_3 : location.line_locationx_3,
+    y3: location.line_locationy_3,
+    x4: eye === 0 ? -location.line_locationx_4 : location.line_locationx_4,
+    y4: location.line_locationy_4,
+  };
+
+  let verticalGap = points.y3 - points.y1;
+  let horizontalGap = points.x4 - points.x2;
+
+  let sceneId = parseInt(selectedIrisId / 2);
+
+  drawLine(sceneId, horizontalColor, 1, false, points.x1, points.y1);
+  drawLine(
+    sceneId,
+    horizontalColor,
+    2,
+    false,
+    points.x1,
+    points.y1 + verticalGap * (1 / 4)
+  );
+  drawLine(
+    sceneId,
+    horizontalColor,
+    3,
+    false,
+    points.x1,
+    points.y1 + verticalGap * (2 / 4)
+  );
+  drawLine(
+    sceneId,
+    horizontalColor,
+    4,
+    false,
+    points.x1,
+    points.y1 + verticalGap * (3 / 4)
+  );
+  drawLine(sceneId, horizontalColor, 5, false, points.x3, points.y3);
+  drawLine(sceneId, verticalColor, 6, true, points.x2, points.y2);
+  drawLine(
+    sceneId,
+    verticalColor,
+    7,
+    true,
+    points.x2 + horizontalGap * (1 / 8),
+    points.y2
+  );
+  drawLine(
+    sceneId,
+    verticalColor,
+    8,
+    true,
+    points.x2 + horizontalGap * (2 / 8),
+    points.y2
+  );
+  drawLine(
+    sceneId,
+    verticalColor,
+    9,
+    true,
+    points.x2 + horizontalGap * (3 / 8),
+    points.y2
+  );
+  drawLine(
+    sceneId,
+    verticalColor,
+    10,
+    true,
+    points.x2 + horizontalGap * (4 / 8),
+    points.y2
+  );
+  drawLine(
+    sceneId,
+    verticalColor,
+    11,
+    true,
+    points.x2 + horizontalGap * (5 / 8),
+    points.y2
+  );
+  drawLine(
+    sceneId,
+    verticalColor,
+    12,
+    true,
+    points.x2 + horizontalGap * (6 / 8),
+    points.y2
+  );
+  drawLine(
+    sceneId,
+    verticalColor,
+    13,
+    true,
+    points.x2 + horizontalGap * (7 / 8),
+    points.y2
+  );
+  drawLine(sceneId, verticalColor, 14, true, points.x4, points.y4);
+
+  lastSceneId = sceneId;
 }
 
 function onWindowResize() {
