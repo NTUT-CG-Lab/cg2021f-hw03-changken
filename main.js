@@ -63,6 +63,9 @@ let eyeIndex = [
   { left: 49, right: 51 }, //TODO
 ];
 
+//紀錄iris旋轉角度
+let irisRotation = {};
+
 Ammo().then(function (AmmoLib) {
   Ammo = AmmoLib;
 
@@ -326,6 +329,7 @@ function onKeyPress(e) {
     setCameraPositionForIris();
   } else if (e.key === 'q' || e.key === 'Q') {
   } else if (e.key === 's' || e.key === 'S') {
+    saveIrisRotation();
   } else if (e.key === '1') {
     selectedIrisId--;
     if (selectedIrisId < 0) {
@@ -625,4 +629,47 @@ function renderSelectedIris(irisId) {
   } else {
     changeIris(0, zoomInData[modelIndex][0].x, zoomInData[modelIndex][0].y);
   }
+}
+
+//儲存線座標資料
+function saveIrisRotation() {
+  irisRotation['Right X negative angle'] =
+    meshes[0].skeleton.bones[eyeIndex[modelIndex].right].rotation.x;
+  irisRotation['Left X negative angle'] =
+    meshes[0].skeleton.bones[eyeIndex[modelIndex].left].rotation.x;
+  irisRotation['Right X positive angle'] =
+    meshes[1].skeleton.bones[eyeIndex[modelIndex].right].rotation.x;
+  irisRotation['Left X positive angle'] =
+    meshes[1].skeleton.bones[eyeIndex[modelIndex].left].rotation.x;
+  irisRotation['Right Y negative angle'] =
+    meshes[2].skeleton.bones[eyeIndex[modelIndex].right].rotation.y;
+  irisRotation['Left Y negative angle'] =
+    meshes[2].skeleton.bones[eyeIndex[modelIndex].left].rotation.y;
+  irisRotation['Right Y positive angle'] =
+    meshes[3].skeleton.bones[eyeIndex[modelIndex].right].rotation.y;
+  irisRotation['Left Y positive angle'] =
+    meshes[3].skeleton.bones[eyeIndex[modelIndex].left].rotation.y;
+
+  // console.log('iris旋轉角度資料: ' + JSON.stringify(irisRotation));
+
+  let modelFileName =
+    modelFile[modelIndex]
+      .split('/')
+      [modelFile[modelIndex].split('/').length - 1].split('.')[0] +
+    '_irisrotation';
+  downloadObjectAsJson(irisRotation, modelFileName);
+}
+
+// download json method
+
+function downloadObjectAsJson(exportObj, exportName) {
+  let dataStr =
+    'data:text/json;charset=utf-8,' +
+    encodeURIComponent(JSON.stringify(exportObj));
+  let downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute('href', dataStr);
+  downloadAnchorNode.setAttribute('download', exportName + '.json');
+  document.body.appendChild(downloadAnchorNode); // required for firefox
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
 }
