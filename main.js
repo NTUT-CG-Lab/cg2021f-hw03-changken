@@ -331,6 +331,50 @@ function onKeyPress(e) {
     loadMMDs();
     setCameraPositionForIris();
   } else if (e.key === 'q' || e.key === 'Q') {
+    /**
+     * 0 => 1
+     * 2 => 3
+     * 4 => 7
+     * 6 => 5
+     */
+    let selectedScene = parseInt(selectedIrisId / 2);
+
+    if (selectedIrisId === 0) {
+      let rightAngle =
+        meshes[selectedScene].skeleton.bones[eyeIndex[modelIndex].right]
+          .rotation.x;
+      selectedIrisId = 1;
+      meshes[selectedScene].skeleton.bones[
+        eyeIndex[modelIndex].left
+      ].rotation.x = rightAngle;
+    } else if (selectedIrisId === 2) {
+      let rightAngle =
+        meshes[selectedScene].skeleton.bones[eyeIndex[modelIndex].right]
+          .rotation.x;
+      selectedIrisId = 3;
+      meshes[selectedScene].skeleton.bones[
+        eyeIndex[modelIndex].left
+      ].rotation.x = rightAngle;
+    } else if (selectedIrisId === 4) {
+      let rightAngle =
+        meshes[selectedScene].skeleton.bones[eyeIndex[modelIndex].right]
+          .rotation.y;
+      selectedIrisId = 7;
+      meshes[selectedScene + 1].skeleton.bones[
+        eyeIndex[modelIndex].left
+      ].rotation.y = -rightAngle;
+    } else if (selectedIrisId === 6) {
+      let rightAngle =
+        meshes[selectedScene].skeleton.bones[eyeIndex[modelIndex].right]
+          .rotation.y;
+      selectedIrisId = 5;
+      meshes[selectedScene - 1].skeleton.bones[
+        eyeIndex[modelIndex].left
+      ].rotation.y = -rightAngle;
+    }
+
+    renderSelectedIris(selectedIrisId);
+    drawLines();
   } else if (e.key === 's' || e.key === 'S') {
     saveIrisRotation();
   } else if (e.key === '1') {
@@ -536,8 +580,11 @@ function onMouseMove(e) {
 
   let selectedSceneId = parseInt(selectedIrisId / 2);
 
-  rotateEye(selectedSceneId, eye, 0, -deltaY);
-  rotateEye(selectedSceneId, eye, 1, deltaX);
+  if (selectedIrisId < 4) {
+    rotateEye(selectedSceneId, eye, 0, -deltaY);
+  } else {
+    rotateEye(selectedSceneId, eye, 1, deltaX);
+  }
 
   console.log(deltaX, deltaY);
 }
