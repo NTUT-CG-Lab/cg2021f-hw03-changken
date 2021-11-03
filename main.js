@@ -40,6 +40,22 @@ let lastSceneId;
 let mouseX = null,
   mouseY = null;
 
+//鏡頭放大參數
+let zoomInData = [
+  [
+    { x: -0.5, y: 8.2 },
+    { x: 0, y: 8 },
+  ],
+  [
+    { x: -0.5, y: 5.5 },
+    { x: 0, y: 5.2 },
+  ], //ok
+  [
+    { x: -0.5, y: 8.2 },
+    { x: 0, y: 8 },
+  ], //TODO
+];
+
 Ammo().then(function (AmmoLib) {
   Ammo = AmmoLib;
 
@@ -219,12 +235,20 @@ function initControlCamera() {
     controls: controlCamera(camera5),
   });
 
-  zoomIn(0, -0.5, 8.2, 0.02);
+  zoomIn(0, zoomInData[modelIndex][0].x, zoomInData[modelIndex][0].y, 0.02);
   // zoomIn(0, 0.5, 8.2, 0.015);
-  zoomIn(1, 0, 8, 0.11);
-  zoomIn(2, 0, 8, 0.11);
-  zoomIn(3, 0, 8, 0.11);
-  zoomIn(4, 0, 8, 0.11);
+  zoomIn(1, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y, 0.11);
+  zoomIn(2, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y, 0.11);
+  zoomIn(3, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y, 0.11);
+  zoomIn(4, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y, 0.11);
+}
+
+function setCameraPositionForIris() {
+  changeIris(0, zoomInData[modelIndex][0].x, zoomInData[modelIndex][0].y);
+  changeIris(1, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y);
+  changeIris(2, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y);
+  changeIris(3, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y);
+  changeIris(4, zoomInData[modelIndex][1].x, zoomInData[modelIndex][1].y);
 }
 
 function controlCamera(camera) {
@@ -284,9 +308,11 @@ function onKeyPress(e) {
       modelIndex = modelFile.length - 1;
     }
     loadMMDs();
+    setCameraPositionForIris();
   } else if (e.key === 'd' || e.key === 'D') {
     modelIndex++;
     loadMMDs();
+    setCameraPositionForIris();
   } else if (e.key === 'q' || e.key === 'Q') {
   } else if (e.key === '1') {
     selectedIrisId--;
@@ -583,8 +609,8 @@ function renderSelectedIris(irisId) {
   //   console.log('irisId ' + irisId);
 
   if (eye === 1) {
-    changeIris(0, 0.5, 8.2);
+    changeIris(0, -zoomInData[modelIndex][0].x, zoomInData[modelIndex][0].y);
   } else {
-    changeIris(0, -0.5, 8.2);
+    changeIris(0, zoomInData[modelIndex][0].x, zoomInData[modelIndex][0].y);
   }
 }
