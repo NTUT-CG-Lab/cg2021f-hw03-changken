@@ -4,6 +4,7 @@ import { OrbitControls } from './jsm/controls/OrbitControls.js';
 import { OutlineEffect } from './jsm/effects/OutlineEffect.js';
 import { MMDLoader } from './jsm/loaders/MMDLoader.js';
 import { MMDAnimationHelper } from './jsm/animation/MMDAnimationHelper.js';
+import { clone } from './jsm/utils/SkeletonUtils.js';
 
 let scene,
   scenes = [],
@@ -51,8 +52,8 @@ let zoomInData = [
     { x: 0, y: 5.2 },
   ],
   [
-    { x: -0.5, y: 8.2 },
-    { x: 0, y: 8 },
+    { x: -0.5, y: 4.5 },
+    { x: 0, y: 4.3 },
   ], //TODO
 ];
 
@@ -60,7 +61,7 @@ let zoomInData = [
 let eyeIndex = [
   { left: 86, right: 88 },
   { left: 49, right: 51 },
-  { left: 49, right: 51 }, //TODO
+  { left: 11, right: 13 },
 ];
 
 //紀錄iris旋轉角度
@@ -187,17 +188,16 @@ function onProgress(xhr) {
 }
 
 function loadMMDs() {
-  loadMMD(modelIndex, 0);
-  loadMMD(modelIndex, 1);
-  loadMMD(modelIndex, 2);
-  loadMMD(modelIndex, 3);
+  loadMMD(modelIndex);
 }
 
-function loadMMD(index, meshId) {
-  if (isInitedList[meshId]) {
-    // scene.remove(mesh);
-    scenes[meshId].remove(meshes[meshId]);
+function loadMMD(index) {
+  for (let i = 0; i < isInitedList.length; i++) {
+    if (isInitedList[i]) {
+      scenes[i].remove(meshes[i]);
+    }
   }
+
   loader.load(
     modelFile[index % modelFile.length],
     async function (object) {
@@ -205,18 +205,18 @@ function loadMMD(index, meshId) {
       mesh.position.y = -10;
 
       // try to rotate iris
-      // console.log(mesh.skeleton.bones);
+      console.log(mesh.skeleton.bones);
 
-      // add mesh
-      meshes[meshId] = mesh;
-      scenes[meshId].add(meshes[meshId]);
+      for (let i = 0; i < meshes.length; i++) {
+        // add mesh
+        meshes[i] = clone(mesh);
+        scenes[i].add(meshes[i]);
 
-      isInitedList[meshId] = true;
+        isInitedList[i] = true;
+      }
 
       await loadModelLocation();
       drawLines();
-
-      // scene.add(mesh);
     },
     onProgress,
     null
