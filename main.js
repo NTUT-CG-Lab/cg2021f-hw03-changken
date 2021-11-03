@@ -325,6 +325,9 @@ function onKeyPress(e) {
     setCameraPositionForIris();
   } else if (e.key === 'd' || e.key === 'D') {
     modelIndex++;
+    if (modelIndex > modelFile.length - 1) {
+      modelIndex = 0;
+    }
     loadMMDs();
     setCameraPositionForIris();
   } else if (e.key === 'q' || e.key === 'Q') {
