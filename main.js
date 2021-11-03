@@ -49,11 +49,18 @@ let zoomInData = [
   [
     { x: -0.5, y: 5.5 },
     { x: 0, y: 5.2 },
-  ], //ok
+  ],
   [
     { x: -0.5, y: 8.2 },
     { x: 0, y: 8 },
   ], //TODO
+];
+
+//左右目的bone index
+let eyeIndex = [
+  { left: 86, right: 88 },
+  { left: 49, right: 51 },
+  { left: 49, right: 51 }, //TODO
 ];
 
 Ammo().then(function (AmmoLib) {
@@ -195,7 +202,7 @@ function loadMMD(index, meshId) {
       mesh.position.y = -10;
 
       // try to rotate iris
-      //   console.log(mesh.skeleton.bones);
+      // console.log(mesh.skeleton.bones);
 
       // add mesh
       meshes[meshId] = mesh;
@@ -287,16 +294,20 @@ function rotateEye(meshId, eye, axis, angle) {
   //左眼
   if (eye === 1) {
     if (axis === 0) {
-      meshes[meshId].skeleton.bones[86].rotation.x = angle * (Math.PI / 180);
+      meshes[meshId].skeleton.bones[eyeIndex[modelIndex].left].rotation.x =
+        angle * (Math.PI / 180);
     } else if (axis === 1) {
-      meshes[meshId].skeleton.bones[86].rotation.y = angle * (Math.PI / 180);
+      meshes[meshId].skeleton.bones[eyeIndex[modelIndex].left].rotation.y =
+        angle * (Math.PI / 180);
     }
     //右眼
   } else if (eye === 0) {
     if (axis === 0) {
-      meshes[meshId].skeleton.bones[88].rotation.x = angle * (Math.PI / 180);
+      meshes[meshId].skeleton.bones[eyeIndex[modelIndex].right].rotation.x =
+        angle * (Math.PI / 180);
     } else if (axis === 1) {
-      meshes[meshId].skeleton.bones[88].rotation.y = angle * (Math.PI / 180);
+      meshes[meshId].skeleton.bones[eyeIndex[modelIndex].right].rotation.y =
+        angle * (Math.PI / 180);
     }
   }
 }
@@ -314,6 +325,7 @@ function onKeyPress(e) {
     loadMMDs();
     setCameraPositionForIris();
   } else if (e.key === 'q' || e.key === 'Q') {
+  } else if (e.key === 's' || e.key === 'S') {
   } else if (e.key === '1') {
     selectedIrisId--;
     if (selectedIrisId < 0) {
