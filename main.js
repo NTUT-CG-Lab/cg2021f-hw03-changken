@@ -173,10 +173,10 @@ function init() {
   //鏡頭控制
   initControlCamera();
 
-  setTimeout(() => {
-    //rotate iris
-    rotateEye(0, 0, 0, 10);
-  }, 3000);
+  // setTimeout(() => {
+  //   //rotate iris
+  //   rotateEye(0, 0, 0, 10);
+  // }, 3000);
 }
 
 // model
@@ -529,13 +529,14 @@ function onMouseMove(e) {
     mouseY = mouseWorld.y;
   }
 
-  let deltaX = ((mouseWorld.x - mouseX) / mouseX) * 100;
-  let deltaY = ((mouseWorld.y - mouseY) / mouseY) * 100;
+  let eye = selectedIrisId % 2;
+  let deltaX =
+    eye === 0 ? (mouseWorld.x + 0.63) * 100 : (mouseWorld.x - 0.365) * 100;
+  let deltaY = (mouseWorld.y - 8.2) * 50;
 
   let selectedSceneId = parseInt(selectedIrisId / 2);
-  let eye = selectedIrisId % 2;
 
-  rotateEye(selectedSceneId, eye, 0, deltaY);
+  rotateEye(selectedSceneId, eye, 0, -deltaY);
   rotateEye(selectedSceneId, eye, 1, deltaX);
 
   console.log(deltaX, deltaY);
@@ -637,21 +638,29 @@ function renderSelectedIris(irisId) {
 //儲存線座標資料
 function saveIrisRotation() {
   irisRotation['Right X negative angle'] =
-    meshes[0].skeleton.bones[eyeIndex[modelIndex].right].rotation.x;
+    -meshes[0].skeleton.bones[eyeIndex[modelIndex].right].rotation.x *
+    (180 / Math.PI);
   irisRotation['Left X negative angle'] =
-    meshes[0].skeleton.bones[eyeIndex[modelIndex].left].rotation.x;
+    -meshes[0].skeleton.bones[eyeIndex[modelIndex].left].rotation.x *
+    (180 / Math.PI);
   irisRotation['Right X positive angle'] =
-    meshes[1].skeleton.bones[eyeIndex[modelIndex].right].rotation.x;
+    -meshes[1].skeleton.bones[eyeIndex[modelIndex].right].rotation.x *
+    (180 / Math.PI);
   irisRotation['Left X positive angle'] =
-    meshes[1].skeleton.bones[eyeIndex[modelIndex].left].rotation.x;
+    -meshes[1].skeleton.bones[eyeIndex[modelIndex].left].rotation.x *
+    (180 / Math.PI);
   irisRotation['Right Y negative angle'] =
-    meshes[2].skeleton.bones[eyeIndex[modelIndex].right].rotation.y;
+    -meshes[2].skeleton.bones[eyeIndex[modelIndex].right].rotation.y *
+    (180 / Math.PI);
   irisRotation['Left Y negative angle'] =
-    meshes[2].skeleton.bones[eyeIndex[modelIndex].left].rotation.y;
+    -meshes[2].skeleton.bones[eyeIndex[modelIndex].left].rotation.y *
+    (180 / Math.PI);
   irisRotation['Right Y positive angle'] =
-    meshes[3].skeleton.bones[eyeIndex[modelIndex].right].rotation.y;
+    -meshes[3].skeleton.bones[eyeIndex[modelIndex].right].rotation.y *
+    (180 / Math.PI);
   irisRotation['Left Y positive angle'] =
-    meshes[3].skeleton.bones[eyeIndex[modelIndex].left].rotation.y;
+    -meshes[3].skeleton.bones[eyeIndex[modelIndex].left].rotation.y *
+    (180 / Math.PI);
 
   // console.log('iris旋轉角度資料: ' + JSON.stringify(irisRotation));
 
