@@ -21,7 +21,7 @@ let camera, camera2, camera3, camera4, camera5;
 
 let loader;
 let modelFile;
-let modelLocationFile;
+let modelLocationFile, modelIrisLocation;
 let modelIndex = 0;
 let selectedIrisId = 0;
 let cameraControlsList = [];
@@ -66,6 +66,14 @@ let eyeIndex = [
 
 //紀錄iris旋轉角度
 let irisRotation = {};
+
+let eyeLocationRange = [
+  { left: { x: 0.63, y: -8.2 }, right: { x: -0.365, y: -8.2 } },
+  { left: { x: 0.735, y: -5.45 }, right: { x: -0.265, y: -5.45 } },
+  { left: { x: 0.75, y: -4.5 }, right: { x: -0.25, y: -4.5 } },
+];
+
+let irisLocation;
 
 Ammo().then(function (AmmoLib) {
   Ammo = AmmoLib;
@@ -157,6 +165,11 @@ function init() {
     'location/KokoroAmamiya.pmx.json',
     'location/AliceMononobe.pmx.json',
   ];
+  modelIrisLocation = [
+    'irislocation/kizunaai_irisrotation.json',
+    'irislocation/KokoroAmamiya_irisrotation.json',
+    'irislocation/AliceMononobe_irisrotation.json',
+  ];
 
   helper = new MMDAnimationHelper();
 
@@ -216,6 +229,7 @@ function loadMMD(index) {
       }
 
       await loadModelLocation();
+      await loadIrisRotation();
       drawLines();
     },
     onProgress,
@@ -573,10 +587,14 @@ function onMouseMove(e) {
     mouseY = mouseWorld.y;
   }
 
+  console.log(mouseWorld.x, mouseWorld.y);
+
   let eye = selectedIrisId % 2;
   let deltaX =
-    eye === 0 ? (mouseWorld.x + 0.63) * 100 : (mouseWorld.x - 0.365) * 100;
-  let deltaY = (mouseWorld.y - 8.2) * 50;
+    eye === 0
+      ? (mouseWorld.x + eyeLocationRange[modelIndex].left.x) * 100
+      : (mouseWorld.x + eyeLocationRange[modelIndex].right.x) * 100;
+  let deltaY = (mouseWorld.y + eyeLocationRange[modelIndex].left.y) * 50;
 
   let selectedSceneId = parseInt(selectedIrisId / 2);
 
@@ -586,7 +604,7 @@ function onMouseMove(e) {
     rotateEye(selectedSceneId, eye, 1, deltaX);
   }
 
-  console.log(deltaX, deltaY);
+  //console.log(deltaX, deltaY);
 }
 
 function onWindowResize() {
@@ -731,4 +749,32 @@ function downloadObjectAsJson(exportObj, exportName) {
   document.body.appendChild(downloadAnchorNode); // required for firefox
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
+}
+
+// load json file
+async function loadIrisRotation() {
+  const res = await fetch(
+    modelIrisLocation[modelIndex % modelIrisLocation.length]
+  );
+  const json = await res.json();
+  console.log(json);
+
+  irisLocation = json;
+
+  meshes[0].skeleton.bones[eyeIndex[modelIndex].right].rotation.x =
+    -irisLocation['Right X negative angle'] * (Math.PI / 180);
+  meshes[0].skeleton.bones[eyeIndex[modelIndex].left].rotation.x =
+    -irisLocation['Left X negative angle'] * (Math.PI / 180);
+  meshes[1].skeleton.bones[eyeIndex[modelIndex].right].rotation.x =
+    -irisLocation['Right X positive angle'] * (Math.PI / 180);
+  meshes[1].skeleton.bones[eyeIndex[modelIndex].left].rotation.x =
+    -irisLocation['Left X positive angle'] * (Math.PI / 180);
+  meshes[2].skeleton.bones[eyeIndex[modelIndex].right].rotation.y =
+    -irisLocation['Right Y negative angle'] * (Math.PI / 180);
+  meshes[2].skeleton.bones[eyeIndex[modelIndex].left].rotation.y =
+    -irisLocation['Left Y negative angle'] * (Math.PI / 180);
+  meshes[3].skeleton.bones[eyeIndex[modelIndex].right].rotation.y =
+    -irisLocation['Right Y positive angle'] * (Math.PI / 180);
+  meshes[3].skeleton.bones[eyeIndex[modelIndex].left].rotation.y =
+    -irisLocation['Left Y positive angle'] * (Math.PI / 180);
 }
